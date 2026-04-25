@@ -1,179 +1,155 @@
-import { useState } from "react";
+import { useEffect, useState } from "react"
+import { supabase } from "./supabase"
+import "./style.css"
 
 export default function App() {
-  const [rows, setRows] = useState([]);
+  const [items, setItems] = useState([])
   const [form, setForm] = useState({
     color_group: "",
-    acrylic: "",
+    acrylic_code: "",
     acrylic_name: "",
-    lp: "",
+    lp_code: "",
     lp_name: "",
-    enamel: "",
-    stock: 1,
+    enamel_code: "",
     note: "",
-  });
+    stock: 1
+  })
 
-  const handleChange = (key, value) => {
-    setForm({ ...form, [key]: value });
-  };
+  // 讀資料
+  const fetchData = async () => {
+    const { data } = await supabase
+      .from("paints")
+      .select("*")
+      .order("id", { ascending: false })
 
-  const addRow = () => {
-    if (!form.acrylic) return;
+    setItems(data || [])
+  }
 
-    setRows([
-      {
-        ...form,
-        id: Date.now(),
-      },
-      ...rows,
-    ]);
+  useEffect(() => {
+    fetchData()
+  }, [])
+
+  // 新增
+  const handleAdd = async () => {
+    if (!form.acrylic_code && !form.acrylic_name) return
+
+    await supabase.from("paints").insert([form])
 
     setForm({
       color_group: "",
-      acrylic: "",
+      acrylic_code: "",
       acrylic_name: "",
-      lp: "",
+      lp_code: "",
       lp_name: "",
-      enamel: "",
-      stock: 1,
+      enamel_code: "",
       note: "",
-    });
-  };
+      stock: 1
+    })
 
-  const updateStock = (id, delta) => {
-    setRows(
-      rows.map((r) =>
-        r.id === id
-          ? { ...r, stock: Math.max(0, r.stock + delta) }
-          : r
-      )
-    );
-  };
+    fetchData()
+  }
 
-  const deleteRow = (id) => {
-    setRows(rows.filter((r) => r.id !== id));
-  };
+  // 刪除
+  const handleDelete = async (id) => {
+    await supabase.from("paints").delete().eq("id", id)
+    fetchData()
+  }
+
+  // 庫存
+  const updateStock = async (id, value) => {
+    await supabase.from("paints").update({ stock: value }).eq("id", id)
+    fetchData()
+  }
 
   return (
-    <div className="app">
-      <h1 className="title">Tamiya 三漆系管理</h1>
+    <div className="container">
+      <h1>Tamiya 三漆系管理</h1>
 
-      {/* 新增 */}
-      <div className="card">
-        <div className="form">
-          <input
-            placeholder="色系"
-            value={form.color_group}
-            onChange={(e) => handleChange("color_group", e.target.value)}
-          />
-          <input
-            placeholder="Acrylic 色號"
-            value={form.acrylic}
-            onChange={(e) => handleChange("acrylic", e.target.value)}
-          />
-          <input
-            placeholder="Acrylic 名稱"
-            value={form.acrylic_name}
-            onChange={(e) => handleChange("acrylic_name", e.target.value)}
-          />
-          <input
-            placeholder="LP 色號"
-            value={form.lp}
-            onChange={(e) => handleChange("lp", e.target.value)}
-          />
-          <input
-            placeholder="LP 名稱"
-            value={form.lp_name}
-            onChange={(e) => handleChange("lp_name", e.target.value)}
-          />
-          <input
-            placeholder="Enamel 色號"
-            value={form.enamel}
-            onChange={(e) => handleChange("enamel", e.target.value)}
-          />
-          <input
-            type="number"
-            placeholder="庫存"
-            value={form.stock}
-            onChange={(e) =>
-              handleChange("stock", Number(e.target.value))
-            }
-          />
-          <input
-            placeholder="備註"
-            value={form.note}
-            onChange={(e) => handleChange("note", e.target.value)}
-          />
+      {/* 表單 */}
+      <div className="card form">
+        <input placeholder="色系"
+          value={form.color_group}
+          onChange={e => setForm({ ...form, color_group: e.target.value })}
+        />
+        <input placeholder="Acrylic 色號"
+          value={form.acrylic_code}
+          onChange={e => setForm({ ...form, acrylic_code: e.target.value })}
+        />
+        <input placeholder="Acrylic 名稱"
+          value={form.acrylic_name}
+          onChange={e => setForm({ ...form, acrylic_name: e.target.value })}
+        />
+        <input placeholder="LP 色號"
+          value={form.lp_code}
+          onChange={e => setForm({ ...form, lp_code: e.target.value })}
+        />
+        <input placeholder="LP 名稱"
+          value={form.lp_name}
+          onChange={e => setForm({ ...form, lp_name: e.target.value })}
+        />
+        <input placeholder="Enamel 色號"
+          value={form.enamel_code}
+          onChange={e => setForm({ ...form, enamel_code: e.target.value })}
+        />
+        <input type="number"
+          value={form.stock}
+          onChange={e => setForm({ ...form, stock: Number(e.target.value) })}
+        />
+        <input placeholder="備註"
+          value={form.note}
+          onChange={e => setForm({ ...form, note: e.target.value })}
+        />
 
-          <button className="addBtn" onClick={addRow}>
-            新增資料
-          </button>
-        </div>
-      </div>
-
-      {/* 工具列 */}
-      <div className="toolbar">
-        <input placeholder="搜尋..." />
-        <button>匯出 CSV</button>
-        <button>匯出 JSON</button>
-        <button>匯入 CSV</button>
-        <button>匯入 JSON</button>
+        <button className="primary" onClick={handleAdd}>
+          新增資料
+        </button>
       </div>
 
       {/* 列表 */}
       <div className="list">
-        {rows.map((row) => (
-          <div className="item" key={row.id}>
-            <div className="item-left">
-              <div className="code">
-                {row.acrylic || row.lp || row.enamel || "-"}
-              </div>
+        {items.map(item => (
+          <div key={item.id} className="item-card">
 
-              <div className="name">
-                {row.acrylic_name || row.lp_name || "-"}
-              </div>
-
-              <div className="name">
-                色系：{row.color_group || "-"} ｜ LP：{row.lp || "-"} ｜ Enamel：{row.enamel || "-"}
-              </div>
-
-              {row.note && (
-                <div className="name">備註：{row.note}</div>
+            <div className="left">
+              {item.acrylic_code && (
+                <div className="code">{item.acrylic_code}</div>
               )}
 
-              <span className="tag">
-                {row.color_group || "未分類"}
-              </span>
+              {item.acrylic_name && (
+                <div className="name">{item.acrylic_name}</div>
+              )}
+
+              {item.color_group && (
+                <span className="tag">{item.color_group}</span>
+              )}
+
+              <div className="sub">
+                {item.lp_code && <>LP: {item.lp_code} </>}
+                {item.enamel_code && <>Enamel: {item.enamel_code}</>}
+              </div>
             </div>
 
-            <div className="item-right">
-              <div className="qty">
-                <button onClick={() => updateStock(row.id, -1)}>
-                  -
-                </button>
-                <span>{row.stock}</span>
-                <button onClick={() => updateStock(row.id, 1)}>
-                  +
-                </button>
+            <div className="right">
+              <div className="stock">
+                <button onClick={() =>
+                  updateStock(item.id, Math.max(0, item.stock - 1))
+                }>-</button>
+
+                <span>{item.stock}</span>
+
+                <button onClick={() =>
+                  updateStock(item.id, item.stock + 1)
+                }>+</button>
               </div>
 
-              <button className="editBtn">編輯</button>
-              <button
-                className="deleteBtn"
-                onClick={() => deleteRow(row.id)}
-              >
+              <button className="danger" onClick={() => handleDelete(item.id)}>
                 刪除
               </button>
             </div>
+
           </div>
         ))}
-
-        {rows.length === 0 && (
-          <div style={{ opacity: 0.4, textAlign: "center" }}>
-            尚未新增資料
-          </div>
-        )}
       </div>
     </div>
-  );
+  )
 }
