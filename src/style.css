@@ -1,11 +1,11 @@
 body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont;
     background: #f6f7fb;
 }
 
 .container {
-    max-width: 900px;
+    width: 100%;
+    max-width: 1400px;
+    /* 或直接拿掉 */
     margin: 40px auto;
     padding: 20px;
 }
@@ -47,9 +47,7 @@ button {
 
 /* list */
 .list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    max-width: 900px;
 }
 
 .item-card {
