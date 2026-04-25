@@ -198,6 +198,7 @@ input:focus {
     font-weight: 900;
     white-space: nowrap;
     box-shadow: 0 8px 18px rgba(21, 24, 36, 0.04);
+    cursor: pointer;
 }
 
 .search {
