@@ -54,9 +54,25 @@ export default function App() {
     })
   }
 
+  function startEdit(row) {
+    setEditingId(row.id)
+    setForm({
+      color_group: row.color_group || "",
+      acrylic: row.acrylic || "",
+      acrylic_name: row.acrylic_name || "",
+      lp: row.lp || "",
+      lp_name: row.lp_name || "",
+      enamel: row.enamel || "",
+      stock: row.stock ?? 1,
+      note: row.note || ""
+    })
+
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
   function cancelEdit() {
-    setForm(emptyForm)
     setEditingId(null)
+    setForm(emptyForm)
   }
 
   async function saveData() {
@@ -91,8 +107,8 @@ export default function App() {
       }
     }
 
-    setForm(emptyForm)
     setEditingId(null)
+    setForm(emptyForm)
     load()
   }
 
@@ -126,22 +142,6 @@ export default function App() {
     }
 
     load()
-  }
-
-  function startEdit(row) {
-    setForm({
-      color_group: row.color_group || "",
-      acrylic: row.acrylic || "",
-      acrylic_name: row.acrylic_name || "",
-      lp: row.lp || "",
-      lp_name: row.lp_name || "",
-      enamel: row.enamel || "",
-      stock: row.stock || 1,
-      note: row.note || ""
-    })
-
-    setEditingId(row.id)
-    window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
   const filtered = useMemo(() => {
