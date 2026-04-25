@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { supabase } from "./supabase"
-import "./App.css"
+import "./style.css"
 
 export default function App() {
   const [rows, setRows] = useState([])
