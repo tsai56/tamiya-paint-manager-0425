@@ -4,6 +4,7 @@ import { supabase } from "./supabase"
 export default function App() {
   const [list, setList] = useState([])
   const [form, setForm] = useState({
+    brand: "",
     code: "",
     name: "",
     color: ""
@@ -26,10 +27,11 @@ export default function App() {
 
     const mapped = (data || []).map((item) => ({
       id: item.id,
+      brand: item.brand || "",
       code: item.acrylic || item.acrylic_code || item.code || "",
       name: item.acrylic_name || item.name || "",
       color: item.color_group || item.color || "",
-      qty: item.stock || 1
+      qty: Number(item.stock ?? 1)
     }))
 
     setList(mapped)
@@ -40,6 +42,7 @@ export default function App() {
 
     const { error } = await supabase.from("paints").insert([
       {
+        brand: form.brand,
         acrylic: form.code,
         acrylic_name: form.name,
         color_group: form.color,
@@ -52,12 +55,19 @@ export default function App() {
       return
     }
 
-    setForm({ code: "", name: "", color: "" })
+    setForm({
+      brand: "",
+      code: "",
+      name: "",
+      color: ""
+    })
+
     fetchData()
   }
 
   async function updateQty(id, qty, delta) {
-    const next = Math.max(0, qty + delta)
+    const safeQty = Number(qty ?? 0)
+    const next = Math.max(0, safeQty + delta)
 
     await supabase
       .from("paints")
@@ -78,12 +88,21 @@ export default function App() {
 
       <div className="form">
         <input
+          placeholder="廠牌"
+          value={form.brand}
+          onChange={(e) =>
+            setForm({ ...form, brand: e.target.value })
+          }
+        />
+
+        <input
           placeholder="色號 (XF-1)"
           value={form.code}
           onChange={(e) =>
             setForm({ ...form, code: e.target.value })
           }
         />
+
         <input
           placeholder="名稱"
           value={form.name}
@@ -91,6 +110,7 @@ export default function App() {
             setForm({ ...form, name: e.target.value })
           }
         />
+
         <input
           placeholder="顏色"
           value={form.color}
@@ -106,6 +126,9 @@ export default function App() {
         {list.map((item) => (
           <div className="card" key={item.id}>
             <div className="left">
+              {item.brand && (
+                <div className="brand">{item.brand}</div>
+              )}
               <div className="title">{item.code}</div>
               <div className="sub">{item.name}</div>
               <div className="tag">{item.color}</div>
@@ -115,7 +138,9 @@ export default function App() {
               <button onClick={() => updateQty(item.id, item.qty, -1)}>
                 -
               </button>
+
               <span>{item.qty}</span>
+
               <button onClick={() => updateQty(item.id, item.qty, 1)}>
                 +
               </button>
