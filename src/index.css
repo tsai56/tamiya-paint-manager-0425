@@ -1,85 +1,131 @@
 body {
-  font-family: sans-serif;
-  background: #f6f7fb;
-  margin: 0;
+  background: #f5f6fa;
+  font-family: -apple-system, sans-serif;
 }
 
 .container {
-  max-width: 900px;
-  margin: 40px auto;
+  max-width: 1100px;
+  margin: auto;
+  padding: 24px;
 }
 
-h1 {
-  font-size: 36px;
-}
-
-.input-bar {
-  display: flex;
-  gap: 10px;
-  margin: 20px 0;
-}
-
-input {
-  flex: 1;
-  padding: 14px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-}
-
-button {
-  padding: 10px 16px;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-}
-
-button:hover {
-  opacity: 0.8;
-}
-
-.stats {
-  display: flex;
-  gap: 20px;
+.titleMain {
+  font-size: 32px;
   margin-bottom: 20px;
 }
 
+/* 表單 */
+.formGrid {
+  display: grid;
+  grid-template-columns: 140px 1fr 1fr 1fr 100px 1fr 120px;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.formGrid input,
+.formGrid select {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+}
+
+.formGrid button {
+  background: #5b6cff;
+  color: white;
+  border: none;
+  border-radius: 10px;
+}
+
+/* 統計 */
+.stats {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.statBox {
+  background: white;
+  padding: 10px 16px;
+  border-radius: 12px;
+}
+
+/* 搜尋 */
+.search {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  margin-bottom: 20px;
+}
+
+/* 卡片 */
 .card {
   display: flex;
   align-items: center;
   background: white;
-  padding: 16px;
-  border-radius: 14px;
-  margin-bottom: 12px;
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.leftBar {
+  width: 6px;
+  height: 100%;
+  background: #5b6cff;
+  margin-right: 16px;
 }
 
 .left {
-  width: 120px;
-  text-align: center;
-}
-
-.code {
-  font-size: 20px;
-  font-weight: bold;
-}
-
-.tag {
-  background: #ddd;
-  padding: 4px 8px;
-  border-radius: 20px;
-  margin-top: 6px;
-}
-
-.center {
   flex: 1;
 }
 
+.brand {
+  font-size: 12px;
+  color: #5b6cff;
+}
+
+.code {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.name {
+  color: #666;
+}
+
+.tag {
+  display: inline-block;
+  margin-top: 6px;
+  background: #eee;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.note {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #999;
+}
+
 .right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  text-align: right;
+}
+
+.stock {
+  font-size: 24px;
+  font-weight: bold;
+  color: #5b6cff;
+}
+
+.btns button {
+  margin: 0 4px;
 }
 
 .delete {
-  background: #ffdddd;
-  color: red;
+  margin-top: 6px;
+  background: #ff4d4f;
+  color: white;
+  border: none;
+  border-radius: 6px;
 }
