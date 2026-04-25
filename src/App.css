@@ -408,3 +408,32 @@ tr:hover td {
     grid-column: span 1;
   }
 }
+
+.importExport {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.importExport button,
+.importButton {
+  border: 1px solid #d9deea;
+  background: #ffffff;
+  color: #374151;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 800;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.importButton {
+  display: inline-flex;
+  align-items: center;
+}
+
+.importExport button:hover,
+.importButton:hover {
+  background: #f3f4f8;
+}

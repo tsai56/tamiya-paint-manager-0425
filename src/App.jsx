@@ -18,6 +18,17 @@ const emptyForm = {
   note: ""
 }
 
+const fields = [
+  "color_group",
+  "acrylic",
+  "acrylic_name",
+  "lp",
+  "lp_name",
+  "enamel",
+  "stock",
+  "note"
+]
+
 export default function App() {
   const [data, setData] = useState([])
   const [form, setForm] = useState(emptyForm)
@@ -142,6 +153,178 @@ export default function App() {
     }
 
     load()
+  }
+
+  function exportJSON() {
+    if (!data.length) {
+      alert("目前沒有資料可匯出")
+      return
+    }
+
+    const cleanData = data.map(row => ({
+      color_group: row.color_group || "",
+      acrylic: row.acrylic || "",
+      acrylic_name: row.acrylic_name || "",
+      lp: row.lp || "",
+      lp_name: row.lp_name || "",
+      enamel: row.enamel || "",
+      stock: Number(row.stock || 0),
+      note: row.note || ""
+    }))
+
+    const blob = new Blob([JSON.stringify(cleanData, null, 2)], {
+      type: "application/json"
+    })
+
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = "tamiya-paints.json"
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  function exportCSV() {
+    if (!data.length) {
+      alert("目前沒有資料可匯出")
+      return
+    }
+
+    const rows = data.map(row =>
+      fields
+        .map(key => `"${String(row[key] ?? "").replaceAll('"', '""')}"`)
+        .join(",")
+    )
+
+    const csv = [fields.join(","), ...rows].join("\n")
+
+    const blob = new Blob(["\uFEFF" + csv], {
+      type: "text/csv;charset=utf-8"
+    })
+
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = "tamiya-paints.csv"
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  async function importJSON(e) {
+    const file = e.target.files[0]
+    if (!file) return
+
+    try {
+      const text = await file.text()
+      const rows = JSON.parse(text)
+
+      if (!Array.isArray(rows)) {
+        alert("JSON 格式錯誤，必須是陣列")
+        return
+      }
+
+      const payload = rows.map(row => ({
+        color_group: row.color_group || "",
+        acrylic: row.acrylic || "",
+        acrylic_name: row.acrylic_name || "",
+        lp: row.lp || "",
+        lp_name: row.lp_name || "",
+        enamel: row.enamel || "",
+        stock: Number(row.stock || 1),
+        note: row.note || ""
+      }))
+
+      const { error } = await supabase.from("paints").insert(payload)
+
+      if (error) {
+        alert("JSON 匯入失敗：" + error.message)
+        return
+      }
+
+      alert("JSON 匯入成功")
+      e.target.value = ""
+      load()
+    } catch (error) {
+      alert("JSON 讀取失敗：" + error.message)
+    }
+  }
+
+  function parseCSVLine(line) {
+    const values = []
+    let current = ""
+    let inQuotes = false
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i]
+      const nextChar = line[i + 1]
+
+      if (char === '"' && inQuotes && nextChar === '"') {
+        current += '"'
+        i++
+      } else if (char === '"') {
+        inQuotes = !inQuotes
+      } else if (char === "," && !inQuotes) {
+        values.push(current)
+        current = ""
+      } else {
+        current += char
+      }
+    }
+
+    values.push(current)
+    return values
+  }
+
+  async function importCSV(e) {
+    const file = e.target.files[0]
+    if (!file) return
+
+    try {
+      const text = await file.text()
+      const lines = text.trim().split(/\r?\n/)
+
+      if (lines.length < 2) {
+        alert("CSV 沒有資料")
+        return
+      }
+
+      const headers = parseCSVLine(lines[0]).map(h =>
+        h.replace(/^\uFEFF/, "").trim()
+      )
+
+      const rows = lines.slice(1).map(line => {
+        const values = parseCSVLine(line)
+        const row = {}
+
+        headers.forEach((key, index) => {
+          row[key] = values[index] || ""
+        })
+
+        return {
+          color_group: row.color_group || "",
+          acrylic: row.acrylic || "",
+          acrylic_name: row.acrylic_name || "",
+          lp: row.lp || "",
+          lp_name: row.lp_name || "",
+          enamel: row.enamel || "",
+          stock: Number(row.stock || 1),
+          note: row.note || ""
+        }
+      })
+
+      const { error } = await supabase.from("paints").insert(rows)
+
+      if (error) {
+        alert("CSV 匯入失敗：" + error.message)
+        return
+      }
+
+      alert("CSV 匯入成功")
+      e.target.value = ""
+      load()
+    } catch (error) {
+      alert("CSV 讀取失敗：" + error.message)
+    }
   }
 
   const filtered = useMemo(() => {
@@ -273,6 +456,21 @@ export default function App() {
           <span>目前顯示</span>
           <strong>{filtered.length}</strong>
         </div>
+      </section>
+
+      <section className="importExport">
+        <label className="importButton">
+          匯入 CSV
+          <input type="file" accept=".csv" onChange={importCSV} hidden />
+        </label>
+
+        <label className="importButton">
+          匯入 JSON
+          <input type="file" accept=".json" onChange={importJSON} hidden />
+        </label>
+
+        <button onClick={exportCSV}>匯出 CSV</button>
+        <button onClick={exportJSON}>匯出 JSON</button>
       </section>
 
       <section className="toolbar">
