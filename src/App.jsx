@@ -30,7 +30,6 @@ export default function App() {
       .order("id", { ascending: false })
 
     if (error) {
-      console.error("讀取失敗", error)
       alert("讀取失敗：" + error.message)
       return
     }
@@ -52,14 +51,14 @@ export default function App() {
     }
 
     const payload = {
-      color_group: form.color_group,
-      acrylic: form.acrylic,
-      acrylic_name: form.acrylic_name,
-      lp: form.lp,
-      lp_name: form.lp_name,
-      enamel: form.enamel,
+      color_group: form.color_group || "",
+      acrylic: form.acrylic || "",
+      acrylic_name: form.acrylic_name || "",
+      lp: form.lp || "",
+      lp_name: form.lp_name || "",
+      enamel: form.enamel || "",
       stock: Number(form.stock || 1),
-      note: form.note
+      note: form.note || ""
     }
 
     if (editId) {
@@ -100,6 +99,8 @@ export default function App() {
       stock: row.stock || 1,
       note: row.note || ""
     })
+
+    window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
   async function deleteRow(id) {
@@ -135,7 +136,18 @@ export default function App() {
   }
 
   function exportJSON() {
-    const blob = new Blob([JSON.stringify(rows, null, 2)], {
+    const cleanRows = rows.map(row => ({
+      color_group: row.color_group || "",
+      acrylic: row.acrylic || "",
+      acrylic_name: row.acrylic_name || "",
+      lp: row.lp || "",
+      lp_name: row.lp_name || "",
+      enamel: row.enamel || "",
+      stock: Number(row.stock || 0),
+      note: row.note || ""
+    }))
+
+    const blob = new Blob([JSON.stringify(cleanRows, null, 2)], {
       type: "application/json"
     })
 
@@ -147,35 +159,207 @@ export default function App() {
     URL.revokeObjectURL(url)
   }
 
+  function exportCSV() {
+    const headers = [
+      "色系",
+      "Acrylic 色號",
+      "Acrylic 名稱",
+      "LP 色號",
+      "LP 名稱",
+      "Enamel 色號",
+      "庫存",
+      "備註"
+    ]
+
+    const csvRows = rows.map(row => [
+      row.color_group || "",
+      row.acrylic || "",
+      row.acrylic_name || "",
+      row.lp || "",
+      row.lp_name || "",
+      row.enamel || "",
+      row.stock || 0,
+      row.note || ""
+    ])
+
+    const csv = [
+      headers.join(","),
+      ...csvRows.map(row =>
+        row.map(value => `"${String(value).replaceAll('"', '""')}"`).join(",")
+      )
+    ].join("\n")
+
+    const blob = new Blob(["\uFEFF" + csv], {
+      type: "text/csv;charset=utf-8"
+    })
+
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = "tamiya-paints.csv"
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   async function importJSON(e) {
     const file = e.target.files[0]
     if (!file) return
 
-    const text = await file.text()
-    const json = JSON.parse(text)
+    try {
+      const text = await file.text()
+      const json = JSON.parse(text)
 
-    const payload = json.map(row => ({
-      color_group: row.color_group || "",
-      acrylic: row.acrylic || "",
-      acrylic_name: row.acrylic_name || "",
-      lp: row.lp || "",
-      lp_name: row.lp_name || "",
-      enamel: row.enamel || "",
-      stock: Number(row.stock || 1),
-      note: row.note || ""
-    }))
+      if (!Array.isArray(json)) {
+        alert("JSON 格式錯誤，必須是陣列")
+        return
+      }
 
-    const { error } = await supabase
-      .from("paints")
-      .insert(payload)
+      const payload = json.map(row => ({
+        color_group: row.color_group || row["色系"] || "",
+        acrylic: row.acrylic || row["Acrylic 色號"] || row["Acrylic"] || "",
+        acrylic_name: row.acrylic_name || row["Acrylic 名稱"] || row["Acrylic 官方名稱"] || "",
+        lp: row.lp || row["LP 色號"] || row["LP"] || "",
+        lp_name: row.lp_name || row["LP 名稱"] || row["LP 官方名稱"] || "",
+        enamel: row.enamel || row["Enamel 色號"] || row["Enamel"] || "",
+        stock: Number(row.stock || row["庫存"] || 1),
+        note: row.note || row["備註"] || ""
+      }))
 
-    if (error) {
-      alert("匯入失敗：" + error.message)
-      return
+      const { error } = await supabase.from("paints").insert(payload)
+
+      if (error) {
+        alert("JSON 匯入失敗：" + error.message)
+        return
+      }
+
+      e.target.value = ""
+      fetchData()
+    } catch (error) {
+      alert("JSON 讀取失敗：" + error.message)
+    }
+  }
+
+  function parseCSVLine(line) {
+    const values = []
+    let current = ""
+    let inQuotes = false
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i]
+      const nextChar = line[i + 1]
+
+      if (char === '"' && inQuotes && nextChar === '"') {
+        current += '"'
+        i++
+      } else if (char === '"') {
+        inQuotes = !inQuotes
+      } else if (char === "," && !inQuotes) {
+        values.push(current)
+        current = ""
+      } else {
+        current += char
+      }
     }
 
-    e.target.value = ""
-    fetchData()
+    values.push(current)
+    return values
+  }
+
+  async function importCSV(e) {
+    const file = e.target.files[0]
+    if (!file) return
+
+    try {
+      const text = await file.text()
+      const lines = text
+        .trim()
+        .split(/\r?\n/)
+        .filter(Boolean)
+
+      if (lines.length < 2) {
+        alert("CSV 沒有資料")
+        return
+      }
+
+      const headers = parseCSVLine(lines[0]).map(h =>
+        h.replace(/^\uFEFF/, "").trim()
+      )
+
+      const payload = lines.slice(1).map(line => {
+        const values = parseCSVLine(line)
+        const row = {}
+
+        headers.forEach((header, index) => {
+          row[header] = (values[index] || "").trim()
+        })
+
+        return {
+          color_group:
+            row.color_group ||
+            row["色系"] ||
+            "",
+          acrylic:
+            row.acrylic ||
+            row["Acrylic 色號"] ||
+            row["Acrylic"] ||
+            "",
+          acrylic_name:
+            row.acrylic_name ||
+            row["Acrylic 名稱"] ||
+            row["Acrylic 官方名稱"] ||
+            "",
+          lp:
+            row.lp ||
+            row["LP 色號"] ||
+            row["LP"] ||
+            "",
+          lp_name:
+            row.lp_name ||
+            row["LP 名稱"] ||
+            row["LP 官方名稱"] ||
+            "",
+          enamel:
+            row.enamel ||
+            row["Enamel 色號"] ||
+            row["Enamel"] ||
+            "",
+          stock: Number(row.stock || row["庫存"] || 1),
+          note:
+            row.note ||
+            row["備註"] ||
+            ""
+        }
+      })
+
+      const cleanPayload = payload.filter(row =>
+        row.color_group ||
+        row.acrylic ||
+        row.acrylic_name ||
+        row.lp ||
+        row.lp_name ||
+        row.enamel ||
+        row.note
+      )
+
+      if (!cleanPayload.length) {
+        alert("沒有可匯入的有效資料，請確認 CSV 欄位名稱")
+        return
+      }
+
+      const { error } = await supabase
+        .from("paints")
+        .insert(cleanPayload)
+
+      if (error) {
+        alert("CSV 匯入失敗：" + error.message)
+        return
+      }
+
+      e.target.value = ""
+      fetchData()
+    } catch (error) {
+      alert("CSV 讀取失敗：" + error.message)
+    }
   }
 
   const filteredRows = rows.filter(row =>
@@ -222,7 +406,13 @@ export default function App() {
           onChange={(e) => setKeyword(e.target.value)}
         />
 
+        <button onClick={exportCSV}>匯出 CSV</button>
         <button onClick={exportJSON}>匯出 JSON</button>
+
+        <label className="upload">
+          匯入 CSV
+          <input type="file" accept=".csv" onChange={importCSV} hidden />
+        </label>
 
         <label className="upload">
           匯入 JSON
