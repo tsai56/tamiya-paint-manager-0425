@@ -294,40 +294,14 @@ export default function App() {
         })
 
         return {
-          color_group:
-            row.color_group ||
-            row["色系"] ||
-            "",
-          acrylic:
-            row.acrylic ||
-            row["Acrylic 色號"] ||
-            row["Acrylic"] ||
-            "",
-          acrylic_name:
-            row.acrylic_name ||
-            row["Acrylic 名稱"] ||
-            row["Acrylic 官方名稱"] ||
-            "",
-          lp:
-            row.lp ||
-            row["LP 色號"] ||
-            row["LP"] ||
-            "",
-          lp_name:
-            row.lp_name ||
-            row["LP 名稱"] ||
-            row["LP 官方名稱"] ||
-            "",
-          enamel:
-            row.enamel ||
-            row["Enamel 色號"] ||
-            row["Enamel"] ||
-            "",
+          color_group: row.color_group || row["色系"] || "",
+          acrylic: row.acrylic || row["Acrylic 色號"] || row["Acrylic"] || "",
+          acrylic_name: row.acrylic_name || row["Acrylic 名稱"] || row["Acrylic 官方名稱"] || "",
+          lp: row.lp || row["LP 色號"] || row["LP"] || "",
+          lp_name: row.lp_name || row["LP 名稱"] || row["LP 官方名稱"] || "",
+          enamel: row.enamel || row["Enamel 色號"] || row["Enamel"] || "",
           stock: Number(row.stock || row["庫存"] || 1),
-          note:
-            row.note ||
-            row["備註"] ||
-            ""
+          note: row.note || row["備註"] || ""
         }
       })
 
@@ -378,30 +352,78 @@ export default function App() {
       .includes(keyword.toLowerCase())
   )
 
+  const totalStock = rows.reduce((sum, row) => sum + Number(row.stock || 0), 0)
+
   return (
     <div className="app">
-      <h1>🎨 Tamiya 三漆系管理</h1>
+      <header className="hero">
+        <div>
+          <p className="eyebrow">TAMIYA PAINT MANAGER</p>
+          <h1>🎨 Tamiya 三漆系管理</h1>
+          <p className="subtitle">
+            管理 Acrylic、LP、Enamel 對照與庫存，快速新增、查詢、匯入與匯出。
+          </p>
+        </div>
 
-      <div className="card">
-        <div className="form">
-          <input name="color_group" placeholder="色系" value={form.color_group} onChange={handleChange} />
-          <input name="acrylic" placeholder="Acrylic 色號" value={form.acrylic} onChange={handleChange} />
-          <input name="acrylic_name" placeholder="Acrylic 名稱" value={form.acrylic_name} onChange={handleChange} />
+        <button className="refreshBtn" onClick={fetchData}>
+          重新讀取
+        </button>
+      </header>
+
+      <section className="panel">
+        <div className="panelHeader">
+          <div>
+            <h2>{editId ? "編輯漆料" : "新增漆料"}</h2>
+            <p>{editId ? "修改完成後按更新資料" : "手動填入欄位，資料會同步到 Supabase"}</p>
+          </div>
+        </div>
+
+        <div className="formGrid">
+          <input name="color_group" placeholder="色系，例如：黑色" value={form.color_group} onChange={handleChange} />
+          <input name="acrylic" placeholder="Acrylic 色號，例如：XF-1" value={form.acrylic} onChange={handleChange} />
+          <input name="acrylic_name" placeholder="Acrylic 名稱，例如：Flat Black" value={form.acrylic_name} onChange={handleChange} />
           <input name="lp" placeholder="LP 色號" value={form.lp} onChange={handleChange} />
           <input name="lp_name" placeholder="LP 名稱" value={form.lp_name} onChange={handleChange} />
           <input name="enamel" placeholder="Enamel 色號" value={form.enamel} onChange={handleChange} />
-          <input name="stock" type="number" placeholder="庫存" value={form.stock} onChange={handleChange} />
+          <input name="stock" type="number" min="0" placeholder="庫存" value={form.stock} onChange={handleChange} />
           <input name="note" placeholder="備註" value={form.note} onChange={handleChange} />
         </div>
 
-        <button className="primary" onClick={saveData}>
-          {editId ? "更新資料" : "新增資料"}
-        </button>
-      </div>
+        <div className="formActions">
+          <button className="primaryBtn" onClick={saveData}>
+            {editId ? "更新資料" : "新增資料"}
+          </button>
 
-      <div className="toolbar">
+          {editId && (
+            <button className="ghostBtn" onClick={() => {
+              setEditId(null)
+              setForm(emptyForm)
+            }}>
+              取消編輯
+            </button>
+          )}
+        </div>
+      </section>
+
+      <section className="stats">
+        <div className="statCard">
+          <span>總品項</span>
+          <strong>{rows.length}</strong>
+        </div>
+        <div className="statCard">
+          <span>總庫存</span>
+          <strong>{totalStock}</strong>
+        </div>
+        <div className="statCard">
+          <span>目前顯示</span>
+          <strong>{filteredRows.length}</strong>
+        </div>
+      </section>
+
+      <section className="tools">
         <input
-          placeholder="搜尋..."
+          className="search"
+          placeholder="搜尋色系、色號、名稱、備註..."
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
         />
@@ -409,44 +431,64 @@ export default function App() {
         <button onClick={exportCSV}>匯出 CSV</button>
         <button onClick={exportJSON}>匯出 JSON</button>
 
-        <label className="upload">
+        <label>
           匯入 CSV
           <input type="file" accept=".csv" onChange={importCSV} hidden />
         </label>
 
-        <label className="upload">
+        <label>
           匯入 JSON
           <input type="file" accept=".json" onChange={importJSON} hidden />
         </label>
-      </div>
+      </section>
 
-      <div className="table">
+      <section className="list">
         {filteredRows.map(row => (
-          <div className="row" key={row.id}>
-            <div className="info">
-              <b>{row.acrylic || row.lp || row.enamel || "未填色號"}</b>
-              <span>{row.acrylic_name || row.lp_name || "-"}</span>
-              <small>
-                色系：{row.color_group || "-"} ｜ LP：{row.lp || "-"} ｜ Enamel：{row.enamel || "-"}
-              </small>
-              <small>{row.note || ""}</small>
+          <article className="paintCard" key={row.id}>
+            <div className="paintLeft">
+              <div className="codeBadge">
+                {row.acrylic || row.lp || row.enamel || "?"}
+              </div>
+
+              <div>
+                <div className="paintTitle">
+                  {row.acrylic || row.lp || row.enamel || "未填色號"}
+                </div>
+                <div className="paintName">
+                  {row.acrylic_name || row.lp_name || "未填名稱"}
+                </div>
+                <div className="paintMeta">
+                  <span className={`colorTag ${row.color_group || "default"}`}>
+                    {row.color_group || "未分類"}
+                  </span>
+                  <span>LP：{row.lp || "-"}</span>
+                  <span>Enamel：{row.enamel || "-"}</span>
+                  {row.note && <span>備註：{row.note}</span>}
+                </div>
+              </div>
             </div>
 
-            <div className="stock">
-              <button onClick={() => updateStock(row, -1)}>-</button>
-              <span>{row.stock}</span>
-              <button onClick={() => updateStock(row, 1)}>+</button>
+            <div className="stockBox">
+              <button onClick={() => updateStock(row, -1)}>－</button>
+              <strong>{row.stock}</strong>
+              <button onClick={() => updateStock(row, 1)}>＋</button>
             </div>
 
-            <div className="actions">
+            <div className="cardActions">
               <button onClick={() => startEdit(row)}>編輯</button>
-              <button className="danger" onClick={() => deleteRow(row.id)}>
+              <button className="dangerBtn" onClick={() => deleteRow(row.id)}>
                 刪除
               </button>
             </div>
-          </div>
+          </article>
         ))}
-      </div>
+
+        {filteredRows.length === 0 && (
+          <div className="empty">
+            目前沒有資料
+          </div>
+        )}
+      </section>
     </div>
   )
 }
