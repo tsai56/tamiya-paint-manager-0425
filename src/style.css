@@ -1,122 +1,87 @@
 body {
-    margin: 0;
-    background: #f3f4f6;
-    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #f5f6fa;
+    font-family: sans-serif;
 }
 
 .container {
-    max-width: 720px;
-    margin: 40px auto;
-    padding: 0 20px;
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
 }
 
 h1 {
+    font-size: 32px;
     margin-bottom: 20px;
 }
 
-.form {
+.quick {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     margin-bottom: 20px;
 }
 
-.form input {
+.quick input {
     flex: 1;
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
+    padding: 12px;
 }
 
-.form button {
-    padding: 10px 16px;
+.quick button {
+    background: #5b6cff;
+    color: white;
+    padding: 12px 20px;
     border: none;
     border-radius: 8px;
-    background: linear-gradient(90deg, #6366f1, #8b5cf6);
-    color: white;
-    cursor: pointer;
 }
 
-.list {
+.stats {
     display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.card {
-    background: white;
-    padding: 16px;
-    border-radius: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.left {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.brand {
-    font-size: 12px;
-    color: #6366f1;
-    font-weight: 700;
-}
-
-.title {
-    font-weight: 700;
-    font-size: 18px;
-}
-
-.sub {
-    color: #666;
-    font-size: 14px;
-}
-
-.tag {
-    display: inline-block;
-    width: fit-content;
-    background: #eee;
-    border-radius: 999px;
-    padding: 4px 10px;
-    font-size: 12px;
-}
-
-.right {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.right button {
-    padding: 6px 10px;
-    border-radius: 6px;
-    border: none;
-    background: #eee;
-    cursor: pointer;
-}
-
-.delete {
-    background: #ef4444 !important;
-    color: white;
-}
-
-@media (max-width: 720px) {
-    .form {
-        flex-direction: column;
-    }
-
-    .card {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 12px;
-    }
+    gap: 20px;
+    margin-bottom: 20px;
 }
 
 .search {
     width: 100%;
-    margin: 20px 0;
     padding: 12px;
-    border-radius: 10px;
-    border: 1px solid #ddd;
+    margin-bottom: 20px;
+}
+
+.card {
+    display: flex;
+    justify-content: space-between;
+    background: white;
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+}
+
+.code {
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.name {
+    color: #666;
+}
+
+.tags span {
+    margin-right: 10px;
+    font-size: 12px;
+    color: #555;
+}
+
+.right {
+    text-align: right;
+}
+
+.stock {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.btns button {
+    margin: 0 4px;
+}
+
+.delete {
+    color: red;
 }
