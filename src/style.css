@@ -1,30 +1,22 @@
-/* Reset */
-* {
-    box-sizing: border-box;
-}
-
 body {
     margin: 0;
     background: #f3f4f6;
     font-family: -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* Container */
 .container {
-    max-width: 900px;
+    max-width: 720px;
     margin: 40px auto;
-    padding: 20px;
+    padding: 0 20px;
 }
 
-/* Title */
 h1 {
     margin-bottom: 20px;
 }
 
-/* Form */
 .form {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     margin-bottom: 20px;
 }
 
@@ -36,22 +28,20 @@ h1 {
 }
 
 .form button {
-    padding: 10px 20px;
+    padding: 10px 16px;
     border: none;
     border-radius: 8px;
-    background: linear-gradient(90deg, #4f46e5, #7c3aed);
+    background: linear-gradient(90deg, #6366f1, #8b5cf6);
     color: white;
     cursor: pointer;
 }
 
-/* List */
 .list {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
 }
 
-/* Card */
 .card {
     background: white;
     padding: 16px;
@@ -61,36 +51,41 @@ h1 {
     align-items: center;
 }
 
-/* Left */
-.left .title {
-    font-weight: bold;
+.left {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.title {
+    font-weight: 700;
     font-size: 18px;
 }
 
-.left .sub {
+.sub {
     color: #666;
+    font-size: 14px;
 }
 
 .tag {
     display: inline-block;
     background: #eee;
-    padding: 4px 10px;
     border-radius: 999px;
-    margin-top: 6px;
+    padding: 4px 10px;
     font-size: 12px;
 }
 
-/* Right */
 .right {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .right button {
     padding: 6px 10px;
-    border: none;
     border-radius: 6px;
+    border: none;
+    background: #eee;
     cursor: pointer;
 }
 
