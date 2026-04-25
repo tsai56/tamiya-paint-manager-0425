@@ -1,116 +1,147 @@
 body {
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     background: #f6f7fb;
+    color: #1f2937;
 }
 
 .container {
-    max-width: 900px;
-    margin: 40px auto;
-    padding: 20px;
+    max-width: 980px;
+    margin: 48px auto;
+    padding: 24px;
 }
 
 h1 {
-    font-size: 28px;
-    margin-bottom: 20px;
+    font-size: 32px;
+    margin-bottom: 24px;
 }
 
-/* 卡片 */
 .card {
-    background: white;
-    padding: 20px;
-    border-radius: 16px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-    margin-bottom: 20px;
+    background: #fff;
+    padding: 22px;
+    border-radius: 18px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.06);
+    margin-bottom: 24px;
 }
 
-/* 表單 */
 .form {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
+    gap: 12px;
 }
 
-.form input {
-    padding: 10px;
-    border-radius: 10px;
-    border: 1px solid #ddd;
+input {
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid #d9deea;
+    font-size: 14px;
 }
 
-/* 按鈕 */
 button {
     border: none;
-    padding: 10px;
-    border-radius: 10px;
+    border-radius: 12px;
+    padding: 10px 14px;
     cursor: pointer;
+    font-weight: 700;
 }
 
 .primary {
     grid-column: span 4;
-    background: linear-gradient(135deg, #5b6cff, #7b4dff);
+    background: linear-gradient(135deg, #5b6cff, #7c4dff);
     color: white;
 }
 
-/* 列表 */
 .list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 14px;
 }
 
-/* 卡片 */
 .item-card {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     background: white;
-    padding: 16px;
-    border-radius: 14px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    padding: 18px 22px;
+    border-radius: 18px;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.05);
 }
 
-.left .code {
-    font-weight: bold;
-    font-size: 20px;
+.left {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
-.left .name {
-    color: #555;
+.code {
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.name {
+    font-size: 16px;
+    color: #374151;
 }
 
 .tag {
     display: inline-block;
-    margin-top: 6px;
-    background: #eee;
-    padding: 4px 10px;
+    width: fit-content;
+    background: #eef2ff;
+    color: #344ed6;
+    padding: 5px 12px;
     border-radius: 999px;
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 700;
 }
 
 .sub {
-    font-size: 12px;
-    color: #888;
-    margin-top: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 13px;
+    color: #6b7280;
 }
 
 .right {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
 }
 
-/* 庫存 */
 .stock {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
 }
 
 .stock button {
-    width: 28px;
-    height: 28px;
+    background: #f1f3f8;
+    width: 34px;
+    height: 34px;
+}
+
+.stock span {
+    font-weight: 800;
+    min-width: 20px;
+    text-align: center;
 }
 
 .danger {
-    background: #ff4d4f;
+    background: #ff5c5c;
     color: white;
+}
+
+@media (max-width: 720px) {
+    .form {
+        grid-template-columns: 1fr;
+    }
+
+    .primary {
+        grid-column: span 1;
+    }
+
+    .item-card {
+        align-items: flex-start;
+        flex-direction: column;
+    }
 }
