@@ -21,7 +21,7 @@ export default function App() {
       .order("id", { ascending: false })
 
     if (error) {
-      console.error(error)
+      console.error("讀取失敗:", error)
       return
     }
 
@@ -51,7 +51,7 @@ export default function App() {
     ])
 
     if (error) {
-      console.error(error)
+      console.error("新增失敗:", error)
       return
     }
 
@@ -69,22 +69,36 @@ export default function App() {
     const safeQty = Number(qty ?? 0)
     const next = Math.max(0, safeQty + delta)
 
-    await supabase
+    const { error } = await supabase
       .from("paints")
       .update({ stock: next })
       .eq("id", id)
+
+    if (error) {
+      console.error("更新失敗:", error)
+      return
+    }
 
     fetchData()
   }
 
   async function removeItem(id) {
-    await supabase.from("paints").delete().eq("id", id)
+    const { error } = await supabase
+      .from("paints")
+      .delete()
+      .eq("id", id)
+
+    if (error) {
+      console.error("刪除失敗:", error)
+      return
+    }
+
     fetchData()
   }
 
   return (
     <div className="container">
-      <h1>Tamiya 三漆系管理</h1>
+      <h1>PM system.</h1>
 
       <div className="form">
         <input
@@ -129,19 +143,32 @@ export default function App() {
               {item.brand && (
                 <div className="brand">{item.brand}</div>
               )}
+
               <div className="title">{item.code}</div>
+
               <div className="sub">{item.name}</div>
-              <div className="tag">{item.color}</div>
+
+              {item.color && (
+                <div className="tag">{item.color}</div>
+              )}
             </div>
 
             <div className="right">
-              <button onClick={() => updateQty(item.id, item.qty, -1)}>
+              <button
+                onClick={() =>
+                  updateQty(item.id, item.qty, -1)
+                }
+              >
                 -
               </button>
 
               <span>{item.qty}</span>
 
-              <button onClick={() => updateQty(item.id, item.qty, 1)}>
+              <button
+                onClick={() =>
+                  updateQty(item.id, item.qty, 1)
+                }
+              >
                 +
               </button>
 
