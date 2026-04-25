@@ -17,16 +17,25 @@ body {
 /* 表單 */
 .formGrid {
   display: grid;
-  grid-template-columns: 140px 1fr 1fr 1fr 100px 1fr 120px;
+  grid-template-columns: 140px 120px 1fr 1fr 80px 1fr 120px;
   gap: 10px;
   margin-bottom: 20px;
 }
 
+/* 手機自動換行 */
+@media (max-width: 768px) {
+  .formGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 .formGrid input,
 .formGrid select {
+  width: 100%;
   padding: 12px;
   border-radius: 10px;
   border: 1px solid #ddd;
+  box-sizing: border-box;
 }
 
 .formGrid button {
@@ -34,6 +43,7 @@ body {
   color: white;
   border: none;
   border-radius: 10px;
+  font-weight: bold;
 }
 
 /* 統計 */
