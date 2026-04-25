@@ -1,136 +1,47 @@
 body {
+  font-family: sans-serif;
   background: #f6f7fb;
-  font-family: system-ui;
-}
-
-.app {
-  max-width: 900px;
-  margin: auto;
-  padding: 30px;
-}
-
-h1 {
-  font-size: 40px;
-}
-
-/* 新增區 */
-.addBox {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.addBox input {
-  flex: 1;
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-}
-
-.addBox button {
-  padding: 12px 20px;
-  background: linear-gradient(135deg, #4f6af6, #6a5cf0);
-  color: white;
-  border: none;
-  border-radius: 10px;
-}
-
-/* stats */
-.stats {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 20px;
-}
-
-/* 卡片 */
-.card {
-  display: grid;
-  grid-template-columns: 120px 1fr 100px 80px;
-  gap: 10px;
-  background: white;
-  border-radius: 15px;
-  padding: 15px;
-  margin-bottom: 10px;
-  border-left: 5px solid #3b82f6;
-}
-
-/* 左側 */
-.left {
-  text-align: center;
-}
-
-.code {
-  font-size: 26px;
-}
-
-.badge {
-  margin-top: 5px;
-  padding: 3px 8px;
-  border-radius: 999px;
-  font-size: 12px;
-}
-
-.badge.acrylic {
-  background: #dbeafe;
-  color: blue;
-}
-
-.badge.lp {
-  background: #ffedd5;
-  color: orange;
-}
-
-.badge.enamel {
-  background: #ede9fe;
-  color: purple;
-}
-
-/* 中間 */
-.info h3 {
   margin: 0;
 }
 
-.tag {
-  display: inline-block;
-  padding: 3px 8px;
-  border-radius: 999px;
-  font-size: 12px;
-  margin: 5px 0;
+.container {
+  max-width: 1200px;
+  margin: 40px auto;
 }
 
-.tag.black {
-  background: black;
-  color: white;
+h1 {
+  margin-bottom: 20px;
 }
 
-.tag.white {
-  background: #eee;
+.form {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
 }
 
-.tag.green {
-  background: green;
-  color: white;
+input {
+  padding: 8px;
 }
 
-.tag.metal {
-  background: gray;
-  color: white;
+button {
+  padding: 8px;
+  cursor: pointer;
 }
 
-/* 庫存 */
-.stock {
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+th,
+td {
+  border: 1px solid #ddd;
+  padding: 10px;
   text-align: center;
 }
 
-.stock button {
-  width: 40px;
-  margin: 3px;
-}
-
-/* 刪除 */
-.delete {
-  background: #fff5f5;
-  border: 1px solid red;
-  color: red;
-  border-radius: 10px;
+th {
+  background: #eee;
 }

@@ -1,118 +1,110 @@
 import { useEffect, useState } from "react"
 import { createClient } from "@supabase/supabase-js"
+import "./App.css"
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_ANON_KEY
 )
 
-function parsePaint(input) {
-  const text = input.toUpperCase()
-
-  const match = text.match(/(XF|X|LP)-?\s?(\d+)/)
-  const code = match ? `${match[1]}-${match[2]}` : input
-
-  let series = "acrylic"
-  if (code.startsWith("LP")) series = "lp"
-  if (code.startsWith("X-")) series = "enamel"
-
-  let name = input
-    .replace(/TAMIYA/i, "")
-    .replace(code, "")
-    .trim()
-
-  let color = "未分類"
-  if (/黑|BLACK/.test(input)) color = "黑色"
-  if (/白|WHITE/.test(input)) color = "白色"
-  if (/銀|SILVER|CHROME/.test(input)) color = "金屬"
-  if (/綠|GREEN/.test(input)) color = "綠色"
-
-  return { code, series, name, color }
-}
-
 export default function App() {
-  const [paints, setPaints] = useState([])
-  const [input, setInput] = useState("")
+  const [data, setData] = useState([])
+  const [form, setForm] = useState({
+    color_group: "",
+    acrylic: "",
+    acrylic_name: "",
+    lp: "",
+    lp_name: "",
+    enamel: "",
+    stock: 1,
+    note: ""
+  })
 
   async function load() {
-    const { data } = await supabase.from("paints").select("*")
-    setPaints(data || [])
+    const { data } = await supabase.from("paints").select("*").order("created_at", { ascending: false })
+    setData(data || [])
   }
 
   useEffect(() => {
     load()
   }, [])
 
-  async function handleAdd() {
-    if (!input) return
+  function handleChange(e) {
+    setForm({ ...form, [e.target.name]: e.target.value })
+  }
 
-    const p = parsePaint(input)
-
-    await supabase.from("paints").insert([
-      {
-        code: p.code,
-        name: p.name,
-        series: p.series,
-        color: p.color,
-        stock: 1,
-      },
-    ])
-
-    setInput("")
+  async function addData() {
+    await supabase.from("paints").insert([form])
+    setForm({
+      color_group: "",
+      acrylic: "",
+      acrylic_name: "",
+      lp: "",
+      lp_name: "",
+      enamel: "",
+      stock: 1,
+      note: ""
+    })
     load()
   }
 
-  async function updateStock(id, val) {
-    await supabase
-      .from("paints")
-      .update({ stock: val })
-      .eq("id", id)
-    load()
-  }
-
-  async function remove(id) {
+  async function deleteRow(id) {
     await supabase.from("paints").delete().eq("id", id)
     load()
   }
 
   return (
     <div className="container">
-      <h1>🎨 Tamiya Paint Manager</h1>
+      <h1>🎨 Tamiya 三漆系管理</h1>
 
-      <div className="input-bar">
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="貼上：TAMIYA XF-85 橡膠黑"
-        />
-        <button onClick={handleAdd}>＋ 新增</button>
+      {/* 新增區 */}
+      <div className="form">
+        <input name="color_group" placeholder="色系" value={form.color_group} onChange={handleChange} />
+        <input name="acrylic" placeholder="Acrylic" value={form.acrylic} onChange={handleChange} />
+        <input name="acrylic_name" placeholder="Acrylic 名稱" value={form.acrylic_name} onChange={handleChange} />
+        <input name="lp" placeholder="LP" value={form.lp} onChange={handleChange} />
+        <input name="lp_name" placeholder="LP 名稱" value={form.lp_name} onChange={handleChange} />
+        <input name="enamel" placeholder="Enamel" value={form.enamel} onChange={handleChange} />
+        <input name="stock" type="number" placeholder="庫存" value={form.stock} onChange={handleChange} />
+        <input name="note" placeholder="備註" value={form.note} onChange={handleChange} />
+
+        <button onClick={addData}>新增</button>
       </div>
 
-      <div className="stats">
-        <div>總品項 {paints.length}</div>
-        <div>總庫存 {paints.reduce((a, b) => a + b.stock, 0)}</div>
-      </div>
+      {/* 表格 */}
+      <table>
+        <thead>
+          <tr>
+            <th>色系</th>
+            <th>Acrylic</th>
+            <th>名稱</th>
+            <th>LP</th>
+            <th>LP名稱</th>
+            <th>Enamel</th>
+            <th>庫存</th>
+            <th>備註</th>
+            <th>操作</th>
+          </tr>
+        </thead>
 
-      {paints.map((p) => (
-        <div className="card" key={p.id}>
-          <div className="left">
-            <div className="code">{p.code}</div>
-            <div className="tag">{p.series}</div>
-          </div>
-
-          <div className="center">
-            <h3>{p.code} {p.name}</h3>
-            <p>色系：{p.color}</p>
-          </div>
-
-          <div className="right">
-            <button onClick={() => updateStock(p.id, p.stock - 1)}>-</button>
-            <span>{p.stock}</span>
-            <button onClick={() => updateStock(p.id, p.stock + 1)}>+</button>
-            <button className="delete" onClick={() => remove(p.id)}>刪除</button>
-          </div>
-        </div>
-      ))}
+        <tbody>
+          {data.map(row => (
+            <tr key={row.id}>
+              <td>{row.color_group}</td>
+              <td>{row.acrylic}</td>
+              <td>{row.acrylic_name}</td>
+              <td>{row.lp}</td>
+              <td>{row.lp_name}</td>
+              <td>{row.enamel}</td>
+              <td>{row.stock}</td>
+              <td>{row.note}</td>
+              <td>
+                <button onClick={() => deleteRow(row.id)}>刪除</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }
