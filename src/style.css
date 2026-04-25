@@ -31,9 +31,6 @@ h1 {
 }
 
 .form input {
-    padding: 10px;
-    border-radius: 10px;
-    border: 1px solid #ddd;
     min-width: 0;
 }
 
@@ -46,9 +43,6 @@ button {
 
 .primary {
     grid-column: 1 / -1;
-    width: 100%;
-    background: linear-gradient(135deg, #5b6cff, #7b4dff);
-    color: white;
 }
 
 /* list */
