@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react"
-import { supabase } from "./supabase"
-import "./style.css"
+import { useEffect, useState } from "react";
+import { supabase } from "./supabase";
 
 export default function App() {
-  const [items, setItems] = useState([])
+  const [list, setList] = useState([]);
+
   const [form, setForm] = useState({
     color_group: "",
     acrylic: "",
@@ -11,43 +11,23 @@ export default function App() {
     lp: "",
     lp_name: "",
     enamel: "",
+    note: "",
     stock: 1,
-    note: ""
-  })
-
-  useEffect(() => {
-    fetchData()
-  }, [])
+  });
 
   async function fetchData() {
-    const { data } = await supabase
-      .from("paints")
-      .select("*")
-      .order("id", { ascending: false })
-
-    setItems(data || [])
+    const { data } = await supabase.from("paints").select("*").order("id", { ascending: false });
+    setList(data || []);
   }
 
-  function handleChange(e) {
-    setForm({ ...form, [e.target.name]: e.target.value })
-  }
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   async function addItem() {
-    if (!form.acrylic && !form.acrylic_name) return
+    if (!form.acrylic) return;
 
-    await supabase.from("paints").insert([
-      {
-        color_group: form.color_group,
-        acrylic: form.acrylic,
-        acrylic_name: form.acrylic_name,
-        lp: form.lp,
-        lp_name: form.lp_name,
-        enamel: form.enamel,
-        stock: Number(form.stock),
-        note: form.note
-      }
-    ])
-
+    await supabase.from("paints").insert([form]);
     setForm({
       color_group: "",
       acrylic: "",
@@ -55,27 +35,23 @@ export default function App() {
       lp: "",
       lp_name: "",
       enamel: "",
+      note: "",
       stock: 1,
-      note: ""
-    })
-
-    fetchData()
+    });
+    fetchData();
   }
 
-  async function deleteItem(id) {
-    await supabase.from("paints").delete().eq("id", id)
-    fetchData()
+  async function updateStock(id, value) {
+    const item = list.find((i) => i.id === id);
+    const newStock = Math.max(0, item.stock + value);
+
+    await supabase.from("paints").update({ stock: newStock }).eq("id", id);
+    fetchData();
   }
 
-  async function updateStock(item, change) {
-    const next = Math.max(0, item.stock + change)
-
-    await supabase
-      .from("paints")
-      .update({ stock: next })
-      .eq("id", item.id)
-
-    fetchData()
+  async function remove(id) {
+    await supabase.from("paints").delete().eq("id", id);
+    fetchData();
   }
 
   return (
@@ -83,57 +59,44 @@ export default function App() {
       <h1>Tamiya 三漆系管理</h1>
 
       <div className="card form">
-        <input name="color_group" placeholder="色系" value={form.color_group} onChange={handleChange} />
-        <input name="acrylic" placeholder="Acrylic 色號" value={form.acrylic} onChange={handleChange} />
-        <input name="acrylic_name" placeholder="Acrylic 名稱" value={form.acrylic_name} onChange={handleChange} />
-        <input name="lp" placeholder="LP 色號" value={form.lp} onChange={handleChange} />
-        <input name="lp_name" placeholder="LP 名稱" value={form.lp_name} onChange={handleChange} />
-        <input name="enamel" placeholder="Enamel 色號" value={form.enamel} onChange={handleChange} />
-        <input name="stock" type="number" value={form.stock} onChange={handleChange} />
-        <input name="note" placeholder="備註" value={form.note} onChange={handleChange} />
+        <input placeholder="色系" value={form.color_group} onChange={(e) => setForm({ ...form, color_group: e.target.value })} />
+        <input placeholder="Acrylic 色號" value={form.acrylic} onChange={(e) => setForm({ ...form, acrylic: e.target.value })} />
+        <input placeholder="Acrylic 名稱" value={form.acrylic_name} onChange={(e) => setForm({ ...form, acrylic_name: e.target.value })} />
+        <input placeholder="LP 色號" value={form.lp} onChange={(e) => setForm({ ...form, lp: e.target.value })} />
+        <input placeholder="LP 名稱" value={form.lp_name} onChange={(e) => setForm({ ...form, lp_name: e.target.value })} />
+        <input placeholder="Enamel 色號" value={form.enamel} onChange={(e) => setForm({ ...form, enamel: e.target.value })} />
+        <input type="number" value={form.stock} onChange={(e) => setForm({ ...form, stock: Number(e.target.value) })} />
+        <input placeholder="備註" value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} />
 
-        <button className="primary" onClick={addItem}>
-          新增資料
-        </button>
+        <button className="primary" onClick={addItem}>新增資料</button>
       </div>
 
       <div className="list">
-        {items.map(item => (
-          <div key={item.id} className="item-card">
-
+        {list.map((item) => (
+          <div className="item-card" key={item.id}>
             <div className="left">
-              {item.acrylic && <div className="code">{item.acrylic}</div>}
-              {item.acrylic_name && <div className="name">{item.acrylic_name}</div>}
+              <div className="code">{item.acrylic}</div>
+              <div className="name">{item.acrylic_name}</div>
+              <div className="tag">{item.color_group}</div>
 
-              {item.color_group && (
-                <span className="tag">{item.color_group}</span>
-              )}
-
-              {(item.lp || item.lp_name || item.enamel || item.note) && (
-                <div className="sub">
-                  {item.lp && <span>LP: {item.lp}</span>}
-                  {item.lp_name && <span>LP 名稱: {item.lp_name}</span>}
-                  {item.enamel && <span>Enamel: {item.enamel}</span>}
-                  {item.note && <span>備註: {item.note}</span>}
-                </div>
-              )}
+              <div className="sub">
+                {item.enamel && <div>Enamel: {item.enamel}</div>}
+                {item.note && <div>備註: {item.note}</div>}
+              </div>
             </div>
 
             <div className="right">
               <div className="stock">
-                <button onClick={() => updateStock(item, -1)}>－</button>
+                <button onClick={() => updateStock(item.id, -1)}>-</button>
                 <span>{item.stock}</span>
-                <button onClick={() => updateStock(item, 1)}>＋</button>
+                <button onClick={() => updateStock(item.id, 1)}>+</button>
               </div>
 
-              <button className="danger" onClick={() => deleteItem(item.id)}>
-                刪除
-              </button>
+              <button className="danger" onClick={() => remove(item.id)}>刪除</button>
             </div>
-
           </div>
         ))}
       </div>
     </div>
-  )
+  );
 }
