@@ -3,9 +3,10 @@ body {
 }
 
 .container {
-    width: 100%;
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: 24px;
     max-width: 1400px;
-    /* 或直接拿掉 */
     margin: 40px auto;
     padding: 20px;
 }
@@ -25,8 +26,11 @@ h1 {
 
 /* 🔥 修正表單不擠 */
 .form {
+    position: sticky;
+    top: 20px;
+
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     gap: 10px;
 }
 
@@ -47,16 +51,21 @@ button {
 
 /* list */
 .list {
-    max-width: 900px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
 }
 
 .item-card {
-    display: flex;
-    justify-content: space-between;
-    background: white;
-    padding: 16px;
+    background: #fff;
     border-radius: 14px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    padding: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    transition: 0.2s;
+}
+
+.item-card:hover {
+    transform: translateY(-2px);
 }
 
 .left {
