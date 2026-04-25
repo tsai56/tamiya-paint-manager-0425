@@ -22,8 +22,11 @@ export default function App() {
   const [data, setData] = useState([])
   const [form, setForm] = useState(emptyForm)
   const [search, setSearch] = useState("")
+  const [loading, setLoading] = useState(false)
 
   async function load() {
+    setLoading(true)
+
     const { data, error } = await supabase
       .from("paints")
       .select("*")
@@ -31,10 +34,12 @@ export default function App() {
 
     if (error) {
       alert("讀取失敗：" + error.message)
+      setLoading(false)
       return
     }
 
     setData(data || [])
+    setLoading(false)
   }
 
   useEffect(() => {
@@ -90,7 +95,6 @@ export default function App() {
 
   const filtered = useMemo(() => {
     const keyword = search.trim().toLowerCase()
-
     if (!keyword) return data
 
     return data.filter(row => {
@@ -111,33 +115,100 @@ export default function App() {
     })
   }, [data, search])
 
+  const totalStock = useMemo(() => {
+    return data.reduce((sum, row) => sum + Number(row.stock || 0), 0)
+  }, [data])
+
   return (
     <div className="container">
       <header className="pageHeader">
-        <p className="eyebrow">TAMIYA PAINT DATABASE</p>
-        <h1>🎨 Tamiya 三漆系管理</h1>
-        <p className="subtitle">
-          手動建立 Acrylic / LP / Enamel 對照資料，並同步管理庫存。
-        </p>
+        <div>
+          <p className="eyebrow">TAMIYA PAINT DATABASE</p>
+          <h1>🎨 Tamiya 三漆系管理</h1>
+          <p className="subtitle">
+            手動建立 Acrylic / LP / Enamel 對照資料，並同步管理庫存。
+          </p>
+        </div>
+
+        <button className="refreshButton" onClick={load}>
+          重新讀取
+        </button>
       </header>
 
       <section className="panel">
         <div className="panelTitle">
           <h2>新增漆料資料</h2>
-          <p>依照 Notion 三漆系母表格式手動填寫</p>
+          <p>依照三漆系母表格式手動填寫，每筆資料會同步到 Supabase。</p>
         </div>
 
         <div className="form">
-          <input name="color_group" placeholder="色系" value={form.color_group} onChange={handleChange} />
-          <input name="acrylic" placeholder="Acrylic" value={form.acrylic} onChange={handleChange} />
-          <input name="acrylic_name" placeholder="Acrylic 官方名稱" value={form.acrylic_name} onChange={handleChange} />
-          <input name="lp" placeholder="LP" value={form.lp} onChange={handleChange} />
-          <input name="lp_name" placeholder="LP 官方名稱" value={form.lp_name} onChange={handleChange} />
-          <input name="enamel" placeholder="Enamel" value={form.enamel} onChange={handleChange} />
-          <input name="stock" type="number" placeholder="庫存" value={form.stock} onChange={handleChange} />
-          <input name="note" placeholder="備註" value={form.note} onChange={handleChange} />
+          <input
+            name="color_group"
+            placeholder="色系，例如：黑色"
+            value={form.color_group}
+            onChange={handleChange}
+          />
+          <input
+            name="acrylic"
+            placeholder="Acrylic，例如：XF-85"
+            value={form.acrylic}
+            onChange={handleChange}
+          />
+          <input
+            name="acrylic_name"
+            placeholder="Acrylic 官方名稱"
+            value={form.acrylic_name}
+            onChange={handleChange}
+          />
+          <input
+            name="lp"
+            placeholder="LP，例如：LP-65"
+            value={form.lp}
+            onChange={handleChange}
+          />
+          <input
+            name="lp_name"
+            placeholder="LP 官方名稱"
+            value={form.lp_name}
+            onChange={handleChange}
+          />
+          <input
+            name="enamel"
+            placeholder="Enamel，例如：XF-85"
+            value={form.enamel}
+            onChange={handleChange}
+          />
+          <input
+            name="stock"
+            type="number"
+            min="0"
+            placeholder="庫存"
+            value={form.stock}
+            onChange={handleChange}
+          />
+          <input
+            name="note"
+            placeholder="備註"
+            value={form.note}
+            onChange={handleChange}
+          />
 
           <button onClick={addData}>＋ 新增資料</button>
+        </div>
+      </section>
+
+      <section className="stats">
+        <div className="statCard">
+          <span>總品項</span>
+          <strong>{data.length}</strong>
+        </div>
+        <div className="statCard">
+          <span>總庫存</span>
+          <strong>{totalStock}</strong>
+        </div>
+        <div className="statCard">
+          <span>目前顯示</span>
+          <strong>{filtered.length}</strong>
         </div>
       </section>
 
@@ -150,7 +221,7 @@ export default function App() {
         />
 
         <div className="counter">
-          顯示 {filtered.length} / {data.length} 筆
+          {loading ? "讀取中..." : `顯示 ${filtered.length} / ${data.length} 筆`}
         </div>
       </section>
 
@@ -184,7 +255,7 @@ export default function App() {
                 <td>{row.lp_name || "-"}</td>
                 <td className="code">{row.enamel || "-"}</td>
                 <td>
-                  <span className="stock">{row.stock}</span>
+                  <span className="stock">{row.stock ?? 0}</span>
                 </td>
                 <td>{row.note || "-"}</td>
                 <td>
@@ -194,6 +265,14 @@ export default function App() {
                 </td>
               </tr>
             ))}
+
+            {filtered.length === 0 && (
+              <tr>
+                <td colSpan="9" className="emptyState">
+                  目前沒有資料
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
