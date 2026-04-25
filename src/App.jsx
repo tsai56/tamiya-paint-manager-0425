@@ -23,6 +23,7 @@ export default function App() {
   const [form, setForm] = useState(emptyForm)
   const [search, setSearch] = useState("")
   const [loading, setLoading] = useState(false)
+  const [editingId, setEditingId] = useState(null)
 
   async function load() {
     setLoading(true)
@@ -53,7 +54,12 @@ export default function App() {
     })
   }
 
-  async function addData() {
+  function cancelEdit() {
+    setForm(emptyForm)
+    setEditingId(null)
+  }
+
+  async function saveData() {
     if (!form.acrylic && !form.lp && !form.enamel) {
       alert("至少填一個色號，例如 Acrylic / LP / Enamel")
       return
@@ -64,16 +70,29 @@ export default function App() {
       stock: Number(form.stock || 1)
     }
 
-    const { error } = await supabase
-      .from("paints")
-      .insert([payload])
+    if (editingId) {
+      const { error } = await supabase
+        .from("paints")
+        .update(payload)
+        .eq("id", editingId)
 
-    if (error) {
-      alert("新增失敗：" + error.message)
-      return
+      if (error) {
+        alert("更新失敗：" + error.message)
+        return
+      }
+    } else {
+      const { error } = await supabase
+        .from("paints")
+        .insert([payload])
+
+      if (error) {
+        alert("新增失敗：" + error.message)
+        return
+      }
     }
 
     setForm(emptyForm)
+    setEditingId(null)
     load()
   }
 
@@ -91,6 +110,38 @@ export default function App() {
     }
 
     load()
+  }
+
+  async function updateStock(row, delta) {
+    const nextStock = Math.max(0, Number(row.stock || 0) + delta)
+
+    const { error } = await supabase
+      .from("paints")
+      .update({ stock: nextStock })
+      .eq("id", row.id)
+
+    if (error) {
+      alert("庫存更新失敗：" + error.message)
+      return
+    }
+
+    load()
+  }
+
+  function startEdit(row) {
+    setForm({
+      color_group: row.color_group || "",
+      acrylic: row.acrylic || "",
+      acrylic_name: row.acrylic_name || "",
+      lp: row.lp || "",
+      lp_name: row.lp_name || "",
+      enamel: row.enamel || "",
+      stock: row.stock || 1,
+      note: row.note || ""
+    })
+
+    setEditingId(row.id)
+    window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
   const filtered = useMemo(() => {
@@ -137,8 +188,12 @@ export default function App() {
 
       <section className="panel">
         <div className="panelTitle">
-          <h2>新增漆料資料</h2>
-          <p>依照三漆系母表格式手動填寫，每筆資料會同步到 Supabase。</p>
+          <h2>{editingId ? "編輯漆料資料" : "新增漆料資料"}</h2>
+          <p>
+            {editingId
+              ? "正在編輯既有資料，修改後請按儲存修改。"
+              : "依照三漆系母表格式手動填寫，每筆資料會同步到 Supabase。"}
+          </p>
         </div>
 
         <div className="form">
@@ -193,7 +248,15 @@ export default function App() {
             onChange={handleChange}
           />
 
-          <button onClick={addData}>＋ 新增資料</button>
+          <button onClick={saveData}>
+            {editingId ? "💾 儲存修改" : "＋ 新增資料"}
+          </button>
+
+          {editingId && (
+            <button className="cancelButton" onClick={cancelEdit}>
+              取消編輯
+            </button>
+          )}
         </div>
       </section>
 
@@ -255,13 +318,22 @@ export default function App() {
                 <td>{row.lp_name || "-"}</td>
                 <td className="code">{row.enamel || "-"}</td>
                 <td>
-                  <span className="stock">{row.stock ?? 0}</span>
+                  <div className="stockControl">
+                    <button onClick={() => updateStock(row, -1)}>－</button>
+                    <span className="stock">{row.stock ?? 0}</span>
+                    <button onClick={() => updateStock(row, 1)}>＋</button>
+                  </div>
                 </td>
                 <td>{row.note || "-"}</td>
                 <td>
-                  <button className="deleteButton" onClick={() => deleteRow(row.id)}>
-                    刪除
-                  </button>
+                  <div className="actionGroup">
+                    <button className="editButton" onClick={() => startEdit(row)}>
+                      編輯
+                    </button>
+                    <button className="deleteButton" onClick={() => deleteRow(row.id)}>
+                      刪除
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
