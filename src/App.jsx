@@ -359,7 +359,7 @@ export default function App() {
       <header className="hero">
         <div>
           <p className="eyebrow">TAMIYA PAINT MANAGER</p>
-          <h1>🎨 Tamiya 三漆系管理</h1>
+          <h1>Tamiya 三漆系管理</h1>
           <p className="subtitle">
             管理 Acrylic、LP、Enamel 對照與庫存，快速新增、查詢、匯入與匯出。
           </p>
